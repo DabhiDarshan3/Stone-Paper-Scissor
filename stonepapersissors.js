@@ -55,13 +55,10 @@ function checkWinner(you, com) {
     msg.style.background = "black";
   } else {
     if (you === "rock") {
-      //paper - scissor
       youWin = com == "paper" ? false : true;
     } else if (you === "paper") {
-      //rock - scissor
       youWin = com == "scissor" ? false : true;
     } else {
-      //paper - rock
       youWin = com == "rock" ? false : true;
     }
     if (youWin) {
@@ -72,40 +69,41 @@ function checkWinner(you, com) {
     } else {
       compScore++;
       compScr.innerText = compScore;
-      msg.innerText = "Comp win!";
+      msg.innerText = "Comp wins!";
       msg.style.background = "red";
     }
   }
 }
 
 function delay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function playRound(yourChoiceId) {
   // Track user move history
   moveHistory.push(yourChoiceId);
   if (moveHistory.length > maxHistoryLength) {
-    moveHistory.shift(); // Keep history length limited
+    moveHistory.shift(); // Keep history limited
   }
 
-  // Add delay to simulate computer thinking
+  // Simulate computer thinking
   msg.innerText = "Computer is thinking...";
   msg.style.background = "orange";
 
   await delay(1000);
 
-  let compChoiceId = compChoice();
-  console.log(yourChoiceId, compChoiceId);
+  // AI logic
+  let predictedMove = predictNextMove();
+  let compChoiceId = getCounterMove(predictedMove);
+
+  console.log("You:", yourChoiceId, "| Computer:", compChoiceId);
   checkWinner(yourChoiceId, compChoiceId);
 }
 
 choices.forEach((choice) => {
   choice.addEventListener("click", () => {
-    // Add shake animation class
     choice.classList.add("shake");
 
-    // Remove shake class after animation duration
     setTimeout(() => {
       choice.classList.remove("shake");
     }, 500);
