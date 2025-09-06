@@ -13,16 +13,17 @@ let compScr = document.querySelector("#comp-score");
 let msg = document.querySelector("#msg");
 
 function predictNextMove() {
-  if (moveHistory.length < 2) {
+  if (moveHistory.length < 3) {
     return null; // Not enough data for prediction
   }
 
-  // Simple frequency-based prediction
+  // Frequency-based prediction on last 3 moves
+  let recentMoves = moveHistory.slice(-3);
   let rockCount = 0,
     paperCount = 0,
     scissorCount = 0;
 
-  moveHistory.forEach((move) => {
+  recentMoves.forEach((move) => {
     if (move === "rock") rockCount++;
     else if (move === "paper") paperCount++;
     else if (move === "scissor") scissorCount++;
@@ -44,6 +45,7 @@ function predictNextMove() {
 function getCounterMove(predictedMove) {
   if (predictedMove === "rock") return "paper";
   if (predictedMove === "scissor") return "rock";
+  if (predictedMove === "paper") return "scissor";
   return comp_choices[Math.floor(Math.random() * 3)];
 }
 
@@ -76,31 +78,38 @@ function checkWinner(you, com) {
   }
 }
 
-compChoice = () => {
-  // Use AI/ML prediction to choose computer move
-  let predictedMove = predictNextMove();
-  if (predictedMove) {
-    return getCounterMove(predictedMove);
-  } else {
-    // Fallback to random choice if no prediction
-    let idx = Math.floor(Math.random() * 3);
-    let comp_choice = comp_choices[idx];
-    return comp_choice;
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function playRound(yourChoiceId) {
+  // Track user move history
+  moveHistory.push(yourChoiceId);
+  if (moveHistory.length > maxHistoryLength) {
+    moveHistory.shift(); // Keep history length limited
   }
-};
+
+  // Add delay to simulate computer thinking
+  msg.innerText = "Computer is thinking...";
+  msg.style.background = "orange";
+
+  await delay(1000);
+
+  let compChoiceId = compChoice();
+  console.log(yourChoiceId, compChoiceId);
+  checkWinner(yourChoiceId, compChoiceId);
+}
 
 choices.forEach((choice) => {
   choice.addEventListener("click", () => {
-    let yourChoiceId = choice.getAttribute("id");
+    // Add shake animation class
+    choice.classList.add("shake");
 
-    // Track user move history
-    moveHistory.push(yourChoiceId);
-    if (moveHistory.length > maxHistoryLength) {
-      moveHistory.shift(); // Keep history length limited
-    }
+    // Remove shake class after animation duration
+    setTimeout(() => {
+      choice.classList.remove("shake");
+    }, 500);
 
-    let compChoiceId = compChoice();
-    console.log(yourChoiceId, compChoiceId);
-    checkWinner(yourChoiceId, compChoiceId);
+    playRound(choice.getAttribute("id"));
   });
 });
